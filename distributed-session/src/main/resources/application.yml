@@ -1,0 +1,15 @@
+server:
+  port: 8081
+
+spring:
+  redis:
+    host: repo.emon.vip
+    port: 6379
+    password: redis123
+    database: 0
+    timeout: 3000
+  session:
+    store-type: redis
+    timeout: 3600
+    redis:
+      namespace: emon:session

@@ -1,0 +1,7 @@
+server:
+  port: 8087
+
+spring:
+  redis:
+    redisson:
+      file: classpath:redisson.yaml

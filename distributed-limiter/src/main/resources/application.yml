@@ -1,0 +1,15 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: distributed-limiter
+  cloud:
+    sentinel:
+      transport:
+        dashboard: repo.emon.vip:8791
+
+sentinel:
+  client:
+    zookeeper:
+      address: repo.emon.vip:2181

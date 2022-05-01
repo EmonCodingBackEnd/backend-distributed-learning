@@ -1,0 +1,16 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    name: product
+  profiles:
+    include: seata
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://repo.emon.vip:3306/db_product?useUnicode=true&useSSL=false
+    username: root
+    password: root123
+  jpa:
+    show-sql: true

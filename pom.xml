@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.3.5.RELEASE</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <groupId>com.coding.distributed</groupId>
+    <artifactId>distributed-learning</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0-SNAPSHOT</version>
+
+    <modules>
+        <module>distributed-id</module>
+        <module>distributed-session</module>
+        <module>distributed-job</module>
+        <module>distributed-limiter</module>
+        <module>distributed-sharding</module>
+        <module>distributed-tx</module>
+        <module>distributed-lock</module>
+    </modules>
+
+    <properties>
+        <java.version>1.8</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+
+        <spring-boot.version>2.3.5.RELEASE</spring-boot.version>
+        <spring-cloud.version>Hoxton.SR8</spring-cloud.version>
+
+        <curator.version>4.0.1</curator.version>
+        <jwt.version>3.19.1</jwt.version>
+        <xxljob.version>2.3.0</xxljob.version>
+        <guava.version>30.0-jre</guava.version>
+        <alibaba-cloud.version>2.2.7.RELEASE</alibaba-cloud.version>
+        <shardingsphere.version>5.0.0</shardingsphere.version>
+        <redisson.version>3.17.1</redisson.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- 定义三方包 beg -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- 数据库驱动 -->
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>5.1.49</version>
+            </dependency>
+
+            <!--美团leaf组件，ID生成器-->
+            <!-- 依赖版本调整，然后执行： mvn clean install -DskipTests
+            因为使用ip地址注册到zk，所以同一个ip下只能启动1个服务实例，否则可能产生相同的ID。
+            程序运行在docker里，同一集群docker容器ip唯一，docker网络。
+            <curator.version>4.0.1</curator.version>
+            <spring-boot-dependencies.version>2.3.5.RELEASE</spring-boot-dependencies.version>
+            -->
+            <dependency>
+                <artifactId>leaf-boot-starter</artifactId>
+                <groupId>com.sankuai.inf.leaf</groupId>
+                <version>1.0.1-RELEASE</version>
+            </dependency>
+            <!--leaf组件依赖zk-->
+            <dependency>
+                <groupId>org.apache.curator</groupId>
+                <artifactId>curator-recipes</artifactId>
+                <exclusions>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                </exclusions>
+                <version>${curator.version}</version>
+            </dependency>
+
+            <!--https://github.com/auth0/java-jwt-->
+            <dependency>
+                <groupId>com.auth0</groupId>
+                <artifactId>java-jwt</artifactId>
+                <version>${jwt.version}</version>
+            </dependency>
+
+            <!--
+            https://github.com/xuxueli/xxl-job
+            比Spring自带的Scheduler好在哪里？
+            【新建xxl-job推荐】
+            1-可以自由调节任务的执行时间，而不用重启服务
+            2-可以分片处理，利用多个服务的性能
+            3-对于很大的异步任务，我们想要等一个任务执行完成后，再执行下一个
+            调度类型：CRON
+            运行模式：BEAN
+            JobHandler：必输项，对应代码的@XxlJob
+            路由策略：轮询、故障转义【推荐】、分片广播【推荐】
+            阻塞处理策略：丢弃后续调度
+            -->
+            <dependency>
+                <groupId>com.xuxueli</groupId>
+                <artifactId>xxl-job-core</artifactId>
+                <version>${xxljob.version}</version>
+            </dependency>
+
+            <!--
+            Win版ApacheBench安装：https://www.apachelounge.com/download/
+            -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+            <!--
+            https://github.com/alibaba/Sentinel/tree/v1.8.0
+
+            启动控制台：https://github.com/alibaba/Sentinel/wiki/%E6%8E%A7%E5%88%B6%E5%8F%B0
+            java -Dserver.port=8080 -Dcsp.sentinel.dashboard.server=localhost:8080 -Dproject.name=sentinel-dashboard -jar sentinel-dashboard-1.8.4.jar
+            访问：http://localhost:8080
+            用户名密码：sentinel/sentinel
+
+            SpringBoot如何引入依赖Sentinel：https://github.com/alibaba/spring-cloud-alibaba/blob/2.2.x/README-zh.md
+            启动服务并访问接口后，才可以在 dashboard 看到该服务
+
+            官方提供的Sentinel并未把Zookeeper的持久化方式放到正式代码中，参考三方打包的使用。
+            java -Dserver.port=8791 -Dcsp.sentinel.dashboard.server=localhost:8791 -Dproject.name=sentinel-dashboard -Ddatasource.provider=zookeeper -Ddatasource.provider.zookeeper.server-addr=repo.emon.vip:2181 -jar sentinel-dashboard-1.8.0-zookeeper.jar
+            -->
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+                <version>${alibaba-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!--https://shardingsphere.apache.org/document/5.0.0/cn/overview/-->
+            <dependency>
+                <groupId>org.apache.shardingsphere</groupId>
+                <artifactId>shardingsphere-jdbc-core-spring-boot-starter</artifactId>
+                <version>${shardingsphere.version}</version>
+            </dependency>
+
+            <!--http://seata.io/zh-cn/
+            http://seata.io/zh-cn/blog/seata-at-tcc-saga.html
+            https://github.com/alibaba/spring-cloud-alibaba/blob/2.2.x/README-zh.md
+            https://github.com/seata/seata/releases 注意：版本对应为1.3.0，发现1.4.2也么问题
+
+            [root@emon ~]# mkdir /usr/local/Seata
+            [root@emon ~]# wget -cP /usr/local/Seata/ https://github.com/seata/seata/releases/download/v1.4.2/seata-server-1.4.2.tar.gz
+            [root@emon ~]# tar -zxvf /usr/local/Seata/seata-server-1.4.2.tar.gz -C /usr/local/Seata/
+            -->
+
+            <!--
+            https://github.com/redisson/redisson/tree/master/redisson-spring-boot-starter
+            -->
+            <!--redisson的依赖包，异常：java.lang.NoClassDefFoundError: com/esotericsoftware/kryo/io/Output-->
+            <!--<dependency>
+                <groupId>com.esotericsoftware.kryo</groupId>
+                <artifactId>kryo</artifactId>
+                <version>2.24.0</version>
+            </dependency>-->
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson-spring-boot-starter</artifactId>
+                <version>${redisson.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.redisson</groupId>
+                        <artifactId>redisson-spring-data-26</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <!-- for Spring Data Redis v.2.3.x -->
+                <artifactId>redisson-spring-data-23</artifactId>
+                <version>${redisson.version}</version>
+            </dependency>
+            <!-- 定义三方包 end -->
+
+
+            <!-- 定义二方包 beg -->
+            <!-- 定义二方包 end -->
+
+
+            <!-- 定义一方包 beg -->
+            <!-- 定义一方包 end -->
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- 定义三方包 beg -->
+        <!--bean自动装配-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <!--生成配置元数据<spring-configuration-metadata.json>，
+            从 @ConfigurationProperties 注释生成自己的配置元数据文件，辅助yml配置时自动提示 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <!--对微服务端点进行管理和配置监控-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+        <!-- 定义三方包 end -->
+
+        <!-- 定义二方包 beg -->
+        <!-- 定义二方包 end -->
+
+
+        <!-- 定义一方包 beg -->
+        <!-- 定义一方包 end -->
+    </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring-boot.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <!--配置生成源码包-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <!--仅在install、deploy时生成源码包-->
+                        <phase>verify</phase>
+                        <goals>
+                            <!--由jar->jar-no-fork解决jenkins中maven3.6.3的问题：“[WARNING] Failed to getClass for org.apache.maven.plugins.source.SourceJarMojo”-->
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

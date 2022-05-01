@@ -1,0 +1,10 @@
+server:
+  port: 8084
+
+spring:
+  profiles:
+    #    include: jpa
+    #    include: sharding-db-table-jpa
+    #    include: sharding-table-jpa
+    #    include: sharding-readwrite-splitting-jpa
+    include: sharding-readwrite-splitting-table-jpa
