@@ -1,5 +1,7 @@
 package com.coding.distributed.job.xxljob;
 
+import com.xxl.job.core.biz.model.ReturnT;
+import com.xxl.job.core.context.XxlJobContext;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
@@ -9,10 +11,10 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
-public class MyXxlJob {
+public class DemoJobHandler {
 
-    /*@XxlJob("myXxlJobHandler")
-    public void myXxlJobHandler() throws Exception {
+    /*@XxlJob("demoJobHandler")
+    public void demoJobHandler() throws Exception {
         // 轮询 流量均摊 推荐
         // 故障转义 流量到第一台，查询日志更方便
 
@@ -32,11 +34,16 @@ public class MyXxlJob {
         XxlJobHelper.log("XXL-JOB, Hello World.");
     }*/
 
-    @XxlJob("myXxlJobHandler")
-    public void myXxlJobHandler() throws Exception {
+    @XxlJob("demoJobHandler")
+    public ReturnT<String> demoJobHandler() throws Exception {
         log.info("myXxlJobHandler execute...");
         TimeUnit.SECONDS.sleep(3);
 
+        String jobParam = XxlJobHelper.getJobParam();
+        log.info(jobParam);
+        XxlJobContext.getXxlJobContext().setHandleMsg("哈哈！");
+
         XxlJobHelper.log("XXL-JOB, Hello World.");
+        return new ReturnT<>("成功！");
     }
 }
