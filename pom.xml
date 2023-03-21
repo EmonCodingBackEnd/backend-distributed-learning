@@ -88,7 +88,7 @@
                 <version>${curator.version}</version>
             </dependency>
 
-            <!--https://github.com/auth0/java-jwt-->
+            <!-- https://github.com/auth0/java-jwt -->
             <dependency>
                 <groupId>com.auth0</groupId>
                 <artifactId>java-jwt</artifactId>
