@@ -91,6 +91,28 @@
             <!--
             官网：https://jwt.io/
             https://github.com/auth0/java-jwt
+
+            jwt的三个组成部分，每部分通过点号来分割，即：header.payload.signature
+            令牌头部(header)是一个JSON对象，一般使用Base64URL编码，承载两部分信息：
+            ① 声明类型typ，表示这个令牌(token)的类型(type)，JWT令牌统一写为JWT
+            ② 声明加密的算法alg，通常直接使用HMAC SHA256，也可以使用RSA，支持很多算法(HS256、HS384、HS512、RS256、RS384、RS512、ES256、ES384、ES512、PS256、PS384)
+
+            令牌载荷也叫消息体(payload)是一个JSON对象，一般使用Base64URL编码，存放主要的有用信息：
+            如：登陆的用户名，登录时间，登录的过期时间，还可以放一些自定义信息【作用:指定JWT的请求数据】
+            这些有效信息包含三个部分：标准中注册的声明、公共的声明和私有的声明
+            一、标准中注册的声明：
+            ① iss(issuer): jwt签发者【推荐】
+            ② iat(issuedAt): jwt的签发时间【推荐】
+            ③ sub(subject): jwt所面向的用户，放登录的用户名等【推荐】
+            ④ aud(audience): jwt接收者
+            ⑤ exp(expiration time): jwt的过期时间，这个过期时间必须要大于签发时间
+            ⑥ nbf(Not Before): 生效时间，定义在什么时间之前
+            ⑦ jti(JWT ID): jwt的唯一身份标识，主要用来作为一次性token,从而回避重放攻击
+            二、公共的声明：公共的声明可以添加任何的信息，一般添加用户的相关信息或其他业务需要的必要信息，但不建议添加敏感信息，因为该部分在客户端可解密
+            三、私有的声明：私有声明是提供者和消费者所共同定义的声明，一般不建议存放敏感信息，因为base64是对称解密的，意味着该部分信息可以归类为明文信息
+
+            令牌签名(signature）存放有效信息的地方，这些有效信息包含三个部分，三部分之间用"."号做分隔，对header和payload使用密钥进行签名，防止数据篡改
+            签名信息的算法：your-256-bit-secret(base64UrlEncode(header) + "." + base64UrlEncode(payload))
             -->
             <dependency>
                 <groupId>com.auth0</groupId>
