@@ -1,5 +1,6 @@
 -- 创建数据库
 CREATE DATABASE IF NOT EXISTS db_order DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+use db_order;
 
 -- 注意此处0.3.0+ 增加唯一索引 ux_undo_log
 CREATE TABLE `undo_log`
